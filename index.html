@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library Management System</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <!-- MOBILE NAVBAR TOGGLE -->
+  <div class="mobile-nav">
+    <h2><i class="fa-solid fa-book-bookmark"></i> LibAdmin</h2>
+    <button class="menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <h2><i class="fa-solid fa-book-bookmark"></i> LibAdmin</h2>
+    <button onclick="showSection('dashboard')" class="nav-btn active"><i class="fa-solid fa-chart-pie"></i> Dashboard</button>
+    <button onclick="showSection('books')" class="nav-btn"><i class="fa-solid fa-book"></i> Books Catalog</button>
+    <button onclick="showSection('members')" class="nav-btn"><i class="fa-solid fa-users"></i> Members</button>
+    <button onclick="showSection('issue')" class="nav-btn"><i class="fa-solid fa-hand-holding-hand"></i> Issue / Return</button>
+    
+    <div class="sidebar-footer">
+      <button onclick="toggleDarkMode()" class="theme-toggle-btn"><i class="fa-solid fa-moon"></i> Dark Mode</button>
+    </div>
+  </div>
+
+  <!-- LOGIN / REGISTER OVERLAY MODAL -->
+<div id="auth-modal" class="modal" style="display:flex;">
+  <div class="modal-content">
+    <h3 id="auth-title">Admin Login</h3>
+    <form id="auth-form" onsubmit="handleAuth(event)">
+      <input type="text" id="auth-username" placeholder="Username" required>
+      <input type="password" id="auth-password" placeholder="Password" required>
+      <button type="submit" id="auth-btn" class="btn-primary">Login</button>
+    </form>
+    <p style="text-align:center; margin-top:10px;">
+      <a href="#" id="auth-toggle" onclick="toggleAuthMode()">Don't have an account? Register</a>
+    </p>
+  </div>
+</div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="section">
+      <div class="section-header">
+        <h2>Dashboard Overview</h2>
+        <div class="export-btns">
+          <button onclick="exportData('csv')" class="btn-secondary"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+          <button onclick="exportData('json')" class="btn-secondary"><i class="fa-solid fa-file-code"></i> Export JSON</button>
+        </div>
+      </div>
+      
+      <div class="stats-grid">
+        <div class="card">
+          <span class="stat-label">Total Books</span>
+          <span class="stat-value" id="stat-total-books">0</span>
+        </div>
+        <div class="card">
+          <span class="stat-label">Issued Books</span>
+          <span class="stat-value" id="stat-issued-books">0</span>
+        </div>
+        <div class="card">
+          <span class="stat-label">Total Members</span>
+          <span class="stat-value" id="stat-total-members">0</span>
+        </div>
+        <div class="card card-warning">
+          <span class="stat-label">Overdue Books</span>
+          <span class="stat-value" id="stat-overdue-books">0</span>
+        </div>
+      </div>
+
+      <div class="table-box">
+        <h2>Recent Activity</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Book Title</th>
+                <th>Member Name</th>
+                <th>Issue Date</th>
+                <th>Due Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="recent-issues-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOOKS -->
+    <div id="books" class="section" style="display:none;">
+      <h2>Books Catalog</h2>
+      <form id="book-form" onsubmit="addBook(event)">
+        <input type="text" id="book-title" placeholder="Book Title" required>
+        <input type="text" id="book-author" placeholder="Author" required>
+        <input type="text" id="book-isbn" placeholder="ISBN" required>
+        <button type="submit"><i class="fa-solid fa-plus"></i> Add Book</button>
+      </form>
+
+      <div class="filter-bar">
+        <div class="search-box">
+          <input type="text" id="search-book" placeholder="🔍 Search Title, Author, ISBN..." onkeyup="renderBooks()">
+        </div>
+        <select id="filter-book-status" onchange="renderBooks()">
+          <option value="ALL">All Statuses</option>
+          <option value="Available">Available</option>
+          <option value="Issued">Issued</option>
+        </select>
+      </div>
+
+      <div class="table-box">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>ISBN</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="books-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMBERS -->
+    <div id="members" class="section" style="display:none;">
+      <h2>Members Directory</h2>
+      <form id="member-form" onsubmit="addMember(event)">
+        <input type="text" id="member-name" placeholder="Member Full Name" required>
+        <input type="email" id="member-email" placeholder="Email Address" required>
+        <button type="submit"><i class="fa-solid fa-user-plus"></i> Add Member</button>
+      </form>
+      
+      <div class="search-box">
+        <input type="text" id="search-member" placeholder="🔍 Search Member Name or Email..." onkeyup="renderMembers()">
+      </div>
+
+      <div class="table-box">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Member ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="members-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ISSUE / RETURN -->
+    <div id="issue" class="section" style="display:none;">
+      <h2>Issue & Return Books</h2>
+      <form id="issue-form" onsubmit="issueBook(event)">
+        <select id="issue-book-select" required>
+          <option value="">Select Available Book</option>
+        </select>
+        <select id="issue-member-select" required>
+          <option value="">Select Member</option>
+        </select>
+        <button type="submit"><i class="fa-solid fa-bookmark"></i> Issue Book</button>
+      </form>
+
+      <div class="table-box">
+        <h2>Currently Issued Books</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Book Title</th>
+                <th>Member Name</th>
+                <th>Issue Date</th>
+                <th>Due Date</th>
+                <th>Overdue Fine</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="issued-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINE COLLECTION MODAL -->
+  <div id="fine-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeFineModal()">&times;</span>
+      <h3>Collect Overdue Fine</h3>
+      <p id="modal-fine-text">Member has an outstanding fine.</p>
+      <div class="modal-actions">
+        <button id="confirm-pay-btn" class="btn-primary">Confirm Return & Collect Fine</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
